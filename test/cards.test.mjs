@@ -88,7 +88,7 @@ test("full card: counters, what is playing, the queue, the lists from the action
   assert.match(html, /<span class="tl">The Quiet Orbit<\/span>/);
   assert.match(html, /S2 E3 · Bedroom tablet · paused/);
   assert.match(html, /3\.1 TB free/);
-  assert.match(html, /<span class="pc">74 %<\/span>/);
+  assert.match(html, /<span class="pc">74%<\/span>/);
 });
 
 test("lists: the config entry from hass.devices, never the admin-only entity registry", async () => {

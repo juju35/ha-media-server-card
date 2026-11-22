@@ -190,6 +190,14 @@ class MediaServerCard extends RcCard {
     }
   }
 
+  _pct(v) {
+    try {
+      return msIntl(Intl.NumberFormat, this._lang(), { style: "percent", maximumFractionDigits: 0 }).format(Math.round(v) / 100);
+    } catch {
+      return `${Math.round(v)}%`;
+    }
+  }
+
   // A disk size: in TB from 1000 GB on.
   _size(v, unit) {
     if (/^GB$/i.test(unit) && v >= 1000) return `${this._fmt(v / 1000, 1)} TB`;
@@ -382,7 +390,7 @@ class MediaServerCard extends RcCard {
       .map((x) => {
         const title = [x.title, this._ep(x)].filter(Boolean).join(" ");
         if (kind === "queue")
-          return `<div class="qi"><span class="tl">${rcEsc(title)}</span><span class="pc">${x.progress == null ? "" : `${Math.round(x.progress)} %`}</span>${this._bar(x.progress, " dl")}</div>`;
+          return `<div class="qi"><span class="tl">${rcEsc(title)}</span><span class="pc">${x.progress == null ? "" : this._pct(x.progress)}</span>${this._bar(x.progress, " dl")}</div>`;
         if (kind === "coming") return `<div class="ci">${this._thumb(x.title)}<span class="pt2"><span class="tl">${rcEsc(title)}</span><span class="sb">${rcEsc([x.episode, MS_NAMES[x.app]].filter(Boolean).join(" · "))}</span></span><span class="wh">${rcEsc(this._when(x.date))}</span></div>`;
         const st = x.status && this._t(`req_${x.status}`) !== `req_${x.status}` ? this._t(`req_${x.status}`) : this._t("req_pending");
         return `<div class="ci">${this._thumb(x.title)}<span class="pt2"><span class="tl">${rcEsc(title)}</span><span class="sb">${rcEsc(x.user ? this._t("by", { u: x.user }) : "")}</span></span><span class="rq">${rcEsc(st)}</span></div>`;
