@@ -15,9 +15,9 @@
   <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/plex.png" alt="Plex" height="24">&nbsp;&nbsp;
   <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/emby.png" alt="Emby" height="24">&nbsp;&nbsp;
   <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/tautulli.png" alt="Tautulli" height="24">&nbsp;&nbsp;
-  <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/sonarr.png" alt="Sonarr" height="36">&nbsp;&nbsp;
-  <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/radarr.png" alt="Radarr" height="36">&nbsp;&nbsp;
-  <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/lidarr.png" alt="Lidarr" height="36">&nbsp;&nbsp;
+  <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/sonarr.png" alt="Sonarr" height="24">&nbsp;&nbsp;
+  <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/radarr.png" alt="Radarr" height="24">&nbsp;&nbsp;
+  <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/lidarr.png" alt="Lidarr" height="24">&nbsp;&nbsp;
   <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/overseerr.png" alt="Seerr" height="24">
 </p>
 
@@ -54,9 +54,9 @@ The card reads the sensors and actions of these integrations:
 | <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/plex.png" alt="Plex" height="16"> | [Plex](https://www.home-assistant.io/integrations/plex/) (built in) | Sessions and what is playing |
 | <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/emby.png" alt="Emby" height="16"> | [Emby](https://www.home-assistant.io/integrations/emby/) (built in) | Sessions and what is playing |
 | <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/tautulli.png" alt="Tautulli" height="16"> | [Tautulli](https://www.home-assistant.io/integrations/tautulli/) (built in) | Plex streams and bandwidth |
-| <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/sonarr.png" alt="Sonarr" height="24"> | [Sonarr](https://www.home-assistant.io/integrations/sonarr/) (built in) | Upcoming episodes, queue and missing |
-| <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/radarr.png" alt="Radarr" height="24"> | [Radarr](https://www.home-assistant.io/integrations/radarr/) (built in) | Upcoming films and queue |
-| <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/lidarr.png" alt="Lidarr" height="24"> | [Lidarr](https://www.home-assistant.io/integrations/lidarr/) (built in) | Upcoming albums and queue |
+| <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/sonarr.png" alt="Sonarr" height="16"> | [Sonarr](https://www.home-assistant.io/integrations/sonarr/) (built in) | Upcoming episodes, queue and missing |
+| <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/radarr.png" alt="Radarr" height="16"> | [Radarr](https://www.home-assistant.io/integrations/radarr/) (built in) | Upcoming films and queue |
+| <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/lidarr.png" alt="Lidarr" height="16"> | [Lidarr](https://www.home-assistant.io/integrations/lidarr/) (built in) | Upcoming albums and queue |
 | <img src="https://raw.githubusercontent.com/juju35/ha-media-server-card/main/images/overseerr.png" alt="Seerr" height="16"> | [Seerr](https://www.home-assistant.io/integrations/overseerr/) (built in) | Pending, approved and available requests (Overseerr, Jellyseerr) |
 
 ## Installation
