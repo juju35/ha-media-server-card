@@ -52,8 +52,7 @@ const msScene = ({ night, playing, animate, uid }) => {
 // otherwise on its own line under the subtitle (clamped to one line). When the label is still cut there, or the text
 // block leaves the banner or runs over its ground strip, the pill keeps its dot alone, on the title row (its label
 // stays in title and aria-label). A card of 200 px or less shows the dot alone anyway (CSS), beside the title.
-// `compact` (the mini card, not zoomed): never a line of its own, so the card keeps its two lines; the dot alone instead.
-const msPlacePill = (head, row, ground, compact = false) => {
+const msPlacePill = (head, row, ground) => {
   if (!head) return;
   head.removeAttribute("data-wrap");
   head.removeAttribute("data-dot");
@@ -64,10 +63,6 @@ const msPlacePill = (head, row, ground, compact = false) => {
   const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
   const title = name ? (name.scrollWidth > name.clientWidth ? name.scrollWidth : name.getBoundingClientRect().width) + gap : 0;
   if (title + pill.getBoundingClientRect().width <= row.getBoundingClientRect().width + 0.5) return;
-  if (compact) {
-    head.setAttribute("data-dot", "");
-    return;
-  }
   head.setAttribute("data-wrap", "");
   const box = row.parentElement.getBoundingClientRect();
   const frame = head.getBoundingClientRect();
@@ -340,7 +335,7 @@ class MediaServerCard extends RcCard {
   _fitPill() {
     for (const row of this.shadowRoot?.querySelectorAll?.(".trow") || []) {
       const banner = row.closest(".banner");
-      msPlacePill(banner || row.closest(".head"), row, banner?.querySelector(".ground"), !!row.closest("ha-card.bn"));
+      msPlacePill(banner || row.closest(".head"), row, banner?.querySelector(".ground"));
     }
   }
 
