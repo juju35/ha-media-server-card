@@ -109,7 +109,7 @@ export const load = ({ now } = {}) => {
   const code = [read("shared"), ...cards.map((c) => `{\n${read(c)}}\n`)].join("\n");
   return vm.runInContext(
     `${code}
-    ({ RcCard, RC_I18N, MS_I18N, rcLang, msFind, msSession, msItems, msHue, customElements, window,
+    ({ RcCard, RC_I18N, MS_I18N, rcLang, msFind, msEntries, msSession, msItems, msHue, customElements, window,
        cards: Object.fromEntries(${JSON.stringify([...cards, "media-server-mini-card"])}.map((t) => [t, customElements.get(t)])) })`,
     ctx,
   );

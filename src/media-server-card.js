@@ -14,8 +14,11 @@ const MS_TABS = [
 ];
 // One loop of the banner's animation (s): the screen's picture breathes while something plays.
 const MS_LOOP = 3;
-// How often the lists are fetched again (ms), and at once when a count changes.
+// How often the lists are fetched again (ms); a count that changes fetches them MS_DEBOUNCE later, once for a burst of
+// changes; an action that never answered is tried again after MS_RETRY.
 const MS_REFRESH = 5 * 60 * 1000;
+const MS_DEBOUNCE = 2000;
+const MS_RETRY = 15 * 60 * 1000;
 
 // ── Banner ───────────────────────────────────────────────────────────────────
 // The illustrated header's scene: 200 × 80, drawn to the banner's right edge. A living room: the television on its
@@ -103,6 +106,8 @@ class MediaServerCard extends RcCard {
     super.disconnectedCallback?.();
     clearInterval(this._timer);
     this._timer = undefined;
+    clearTimeout(this._soon);
+    this._soon = undefined;
     this._resize?.disconnect();
     this._fitWidth = undefined;
     if (this._fitFrame) cancelAnimationFrame(this._fitFrame);
@@ -110,39 +115,28 @@ class MediaServerCard extends RcCard {
     this._tab = null;
   }
 
-  // The lists from the integrations' actions (with return_response), for the platforms found. The actions need the
-  // config entry of the integration: read once from the entity registry, from one of its sensors.
+  // The lists from the integrations' actions (with return_response), for the platforms found, all at once. A second
+  // request while one runs is done right after it.
   async _fetch() {
     const h = this._hass;
-    if (!h?.callWS || this._busy) return;
+    if (!h?.callWS) return;
+    if (this._busy) {
+      this._again = true;
+      return;
+    }
     this._busy = true;
     const lists = { coming: [], queue: [], requests: [] };
     let any = false;
     try {
-      const reg = h.entities || {};
-      this._entries ||= {};
-      for (const [domain, service, kind] of MS_ACTIONS) {
-        if (!h.services?.[domain]?.[service]) continue;
-        if (this._entries[domain] === undefined) {
-          const id = Object.keys(reg).find((x) => reg[x].platform === domain);
-          const e = id ? await h.callWS({ type: "config/entity_registry/get", entity_id: id }).catch(() => null) : null;
-          this._entries[domain] = e?.config_entry_id || null;
-        }
-        const entry = this._entries[domain];
-        if (!entry) continue;
-        const extra = domain === "overseerr" ? [{ status: "pending" }, {}] : [{}];
-        let resp = null;
-        for (const field of ["entry_id", "config_entry_id"]) {
-          for (const more of extra) {
-            resp = await h.callWS({ type: "call_service", domain, service, service_data: { [field]: entry, ...more }, return_response: true }).catch(() => null);
-            if (resp) break;
-          }
-          if (resp) break;
-        }
+      this._ways ||= {};
+      this._failed ||= {};
+      const now = Date.now();
+      const jobs = MS_ACTIONS.filter(([d, s]) => h.services?.[d]?.[s] && !(now - (this._failed[`${d}.${s}`] ?? -Infinity) < MS_RETRY));
+      const done = await Promise.all(jobs.map(([d, s, kind]) => this._call(h, d, s).then((resp) => [d, kind, resp])));
+      for (const [domain, kind, resp] of done) {
         if (!resp) continue;
         any = true;
-        const items = msItems(resp.response ?? resp, kind).map((x) => ({ ...x, app: domain }));
-        lists[kind].push(...items);
+        lists[kind].push(...msItems(resp.response ?? resp, kind).map((x) => ({ ...x, app: domain })));
       }
     } finally {
       this._busy = false;
@@ -151,6 +145,41 @@ class MediaServerCard extends RcCard {
     this._listsAt = Date.now();
     this._sig = null;
     this._render();
+    if (this._again) {
+      this._again = false;
+      this._fetch();
+    }
+  }
+
+  // One action: called the way that answered last time, else each way in turn (the integration's config entries ×
+  // the entry field's two names × Seerr's filter) until one answers, which is kept. When none answers, the action
+  // waits MS_RETRY before it is tried again; with no config entry known yet (the registry still loading), nothing is
+  // kept and it is tried at the next fetch.
+  async _call(h, domain, service) {
+    const key = `${domain}.${service}`;
+    const call = (w) => h.callWS({ type: "call_service", domain, service, service_data: { [w.field]: w.entry, ...w.more }, return_response: true }).catch(() => null);
+    const known = this._ways[key];
+    if (known) {
+      const resp = await call(known);
+      if (resp) return resp;
+      delete this._ways[key];
+    }
+    const entries = msEntries(h, domain);
+    if (!entries.length) return null;
+    const extra = domain === "overseerr" ? [{ status: "pending" }, {}] : [{}];
+    for (const entry of entries)
+      for (const field of ["entry_id", "config_entry_id"])
+        for (const more of extra) {
+          const way = { entry, field, more };
+          const resp = await call(way);
+          if (resp) {
+            this._ways[key] = way;
+            delete this._failed[key];
+            return resp;
+          }
+        }
+    this._failed[key] = Date.now();
+    return null;
   }
 
   _fmt(v, digits) {
@@ -197,11 +226,17 @@ class MediaServerCard extends RcCard {
     const counts = { upcoming: sum("upcoming"), queue: sum("queue"), wanted: sum("wanted"), requests: sum("requests"), transcoding: sum("transcoding"), watching: sum("watching") };
     const bwSt = (found.roles.bandwidth || []).map((id) => h.states[id]).find((st) => msNum(st) != null);
     const diskSt = (found.roles.diskspace || []).map((id) => h.states[id]).find((st) => msNum(st) != null);
-    // The lists, fetched at first, every MS_REFRESH and when a count changes.
+    // The lists, fetched at first, every MS_REFRESH and shortly after a count changes (see MS_DEBOUNCE).
     const key = JSON.stringify(counts);
-    if (h.callWS && !this._busy && (this._listsKey !== key || !this._listsAt || Date.now() - this._listsAt > MS_REFRESH)) {
+    const stale = !this._listsAt || Date.now() - this._listsAt > MS_REFRESH;
+    if (h.callWS && !this._soon && (this._listsKey !== key || (stale && !this._busy))) {
       this._listsKey = key;
-      this._fetch();
+      if (!this._listsAt && !this._busy) this._fetch();
+      else
+        this._soon = setTimeout(() => {
+          this._soon = undefined;
+          this._fetch();
+        }, MS_DEBOUNCE);
     }
     const L = this._lists;
     const now = Date.now();

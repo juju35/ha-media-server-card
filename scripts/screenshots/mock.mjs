@@ -8,12 +8,14 @@ export const NOW = new Date(2026, 5, 20, 20, 15).getTime();
 const at = (days, hour, minute = 0) => new Date(2026, 5, 20 + days, hour, minute).getTime();
 
 // The answer of Home Assistant to the card's callWS, from the data on the hass object (`this.__data`): the entity
-// registry's config entry, and each action's response. Used as is in the page (its source) and in the tests.
+// each action's response (the config entry comes from hass.devices). Used as is in the page (its source) and in the
+// tests.
 export async function answer(msg) {
   const d = this.__data || {};
-  if (msg.type === "config/entity_registry/get") return { config_entry_id: `${this.entities?.[msg.entity_id]?.platform}_entry` };
   if (msg.type === "call_service") {
     const r = d[`${msg.domain}.${msg.service}`];
+    const entry = msg.service_data?.entry_id || msg.service_data?.config_entry_id;
+    if (entry && entry !== `${msg.domain}_entry`) throw new Error("bad entry");
     if (!r || !(msg.service_data?.entry_id || (msg.domain === "overseerr" && msg.service_data?.config_entry_id))) throw new Error("bad call");
     return { context: {}, response: r };
   }
@@ -55,9 +57,12 @@ export const setup = (s = {}) => {
   const scene = s.scene || "playing";
   const states = {};
   const entities = {};
+  const devices = {};
+  // One device per integration, its config entry listed as Home Assistant lists it (hass.devices).
   const add = (id, state, attributes, platform, key) => {
     states[id] = st(id, state, attributes);
-    entities[id] = { entity_id: id, platform, ...(key ? { translation_key: key } : {}) };
+    entities[id] = { entity_id: id, platform, device_id: `${platform}_device`, ...(key ? { translation_key: key } : {}) };
+    devices[`${platform}_device`] = { id: `${platform}_device`, config_entries: [`${platform}_entry`], primary_config_entry: `${platform}_entry` };
   };
   for (const [id, state, a] of SESSIONS) add(id, scene === "playing" ? state : "idle", a, "jellyfin");
   const playing = scene === "playing";
@@ -79,6 +84,7 @@ export const setup = (s = {}) => {
       language: "en",
       locale: { language: "en" },
       entities,
+      devices,
       states,
       services: { sonarr: { get_upcoming: {}, get_queue: {} }, radarr: { get_upcoming: {}, get_queue: {} }, overseerr: { get_requests: {} } },
       __data: data,

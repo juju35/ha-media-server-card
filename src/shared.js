@@ -487,6 +487,19 @@ const msFind = (hass, overrides = {}) => {
   return out;
 };
 
+// The config entries an integration's actions may need, from the devices of its entities (hass.devices, readable by
+// every user, unlike the entity registry's details): the device's primary entry first, then its other entries.
+const msEntries = (hass, domain) => {
+  const reg = hass.entities || {};
+  const out = [];
+  for (const id of Object.keys(reg)) {
+    if (reg[id].platform !== domain) continue;
+    const dev = hass.devices?.[reg[id].device_id];
+    for (const e of [dev?.primary_config_entry, ...(dev?.config_entries || [])]) if (e && !out.includes(e)) out.push(e);
+  }
+  return out;
+};
+
 // A session of a media player: what plays, on which device, how far.
 const msSession = (st) => {
   const a = st.attributes || {};

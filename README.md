@@ -164,7 +164,7 @@ entities:
 
 - **Sessions**: the `media_player` entities of Jellyfin, Plex and Emby (or `players`) that are playing or paused: their media title, series, season and episode, position and duration
 - **Counts**, by platform and translation key or entity id: Tautulli's watching, transcode and total bandwidth sensors; the upcoming, queue, wanted and disk space sensors of Sonarr, Radarr and Lidarr (added up); Seerr's pending requests; `entities` sets any role
-- **Lists**: the integrations' actions, when Home Assistant has them — `sonarr.get_upcoming`, `radarr.get_upcoming`, `lidarr.get_upcoming`, `sonarr.get_queue`, `radarr.get_queue`, `lidarr.get_queue`, `overseerr.get_requests` — called with `return_response` and the integration's config entry (read from the entity registry); fetched at first, every 5 minutes and when a count changes. Without them, the counters show the sensors' counts and the lists a hint
+- **Lists**: the integrations' actions, when Home Assistant has them — `sonarr.get_upcoming`, `radarr.get_upcoming`, `lidarr.get_upcoming`, `sonarr.get_queue`, `radarr.get_queue`, `lidarr.get_queue`, `overseerr.get_requests` — called with `return_response` and the integration's config entry (from its device, so no admin rights are needed); all at once, at first, every 5 minutes and 2 seconds after a count changes (once for a burst of changes). The way each action answered is kept; an action that never answers is tried again after 15 minutes. Without them, the counters show the sensors' counts and the lists a hint
 - **Read only**: the card calls no action that changes anything
 
 ## Development

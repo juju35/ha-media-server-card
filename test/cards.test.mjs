@@ -91,6 +91,55 @@ test("full card: counters, what is playing, the queue, the lists from the action
   assert.match(html, /<span class="pc">74 %<\/span>/);
 });
 
+test("lists: the config entry from hass.devices, never the admin-only entity registry", async () => {
+  const hass = makeHass();
+  const card = await make("media-server-card", {}, hass);
+  assert.equal(hass.ws.filter((w) => w.type !== "call_service").length, 0, "no registry call");
+  assert.equal(card._items.nComing, 4);
+  assert.deepEqual(json(ms.msEntries(hass, "sonarr")), ["sonarr_entry"]);
+  assert.deepEqual(json(ms.msEntries({ entities: hass.entities }, "sonarr")), [], "no devices yet: no entry");
+});
+
+test("lists: the way that answered is kept; an action that never answers waits before it is tried again", async () => {
+  const hass = makeHass();
+  delete hass.__data["radarr.get_upcoming"];
+  const card = await make("media-server-card", {}, hass);
+  const calls = (from) => hass.ws.slice(from).map((w) => `${w.domain}.${w.service}`);
+  assert.equal(calls(0).filter((c) => c === "radarr.get_upcoming").length, 2, "both field names tried");
+  assert.equal(card._failed["radarr.get_upcoming"], NOW);
+  let from = hass.ws.length;
+  await card._fetch();
+  assert.deepEqual(calls(from), ["sonarr.get_upcoming", "sonarr.get_queue", "radarr.get_queue", "overseerr.get_requests"], "one call each, the failed one skipped");
+  card._failed["radarr.get_upcoming"] = NOW - 16 * 60 * 1000;
+  from = hass.ws.length;
+  await card._fetch();
+  assert.ok(calls(from).includes("radarr.get_upcoming"), "tried again after the delay");
+  // The registry not loaded yet: nothing is kept, the next fetch tries again.
+  const early = await make("media-server-card", {}, { ...makeHass(), devices: {} });
+  assert.deepEqual(json(early._failed), {});
+  assert.equal(early._items.hasLists, false);
+});
+
+test("lists: a count that changes fetches once, a moment later", async () => {
+  const hass = makeHass();
+  const card = await make("media-server-card", {}, hass);
+  const from = hass.ws.length;
+  const bump = (v) => {
+    const states = { ...hass.states, "sensor.sonarr_queue": { ...hass.states["sensor.sonarr_queue"], state: v } };
+    card.hass = { ...hass, states };
+  };
+  bump("2");
+  const timer = card._soon;
+  assert.ok(timer, "scheduled");
+  bump("3");
+  assert.equal(card._soon, timer, "one fetch for the burst");
+  assert.equal(hass.ws.length, from, "nothing fetched at once");
+  await new Promise((r) => setTimeout(r, 2100));
+  await settle();
+  assert.equal(hass.ws.length - from, 5, "one round of the five actions");
+  card.disconnectedCallback();
+});
+
 test("the counters open their list, the tabs switch, the counter or the cross closes it", async () => {
   const card = await make("media-server-card");
   const buttons = [];
