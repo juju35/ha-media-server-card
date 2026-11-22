@@ -24,7 +24,7 @@ If applicable, add screenshots to help explain your problem.
 **Environment:**
 - Home Assistant version:
 - Browser:
-- HACS version:
+- Marketplace version:
 - Card version:
 - Card (media-server-card or media-server-mini-card):
 - Integrations (Jellyfin, Plex, Emby, Tautulli, Sonarr, Radarr, Lidarr, Seerr…):
