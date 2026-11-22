@@ -566,6 +566,7 @@ class MediaServerCard extends RcCard {
     .banner .rs { display: flex; flex-wrap: wrap; gap: 4px; height: 20px; margin: 3px 0 0 -2px; min-width: 0; overflow: hidden; }
     .banner .r { flex: none; line-height: 20px; padding: 0 7px; color: var(--bt); background: rgba(255,255,255,.62); }
     .banner.night .r { background: rgba(10,20,40,.4); }
+    .banner span.r { cursor: default; }
     .banner .ringb { position: absolute; inset: 0; }
     /* Home Assistant's dark theme: the sun's colours on a dark tile. */
     ha-card.dk { --sf-l1: #4a3d1f; --sf-l2: #7a5a1c; --sf-l3: #b07818; --sf-l4: #e08a18; --sf-l5: #f76707; }
