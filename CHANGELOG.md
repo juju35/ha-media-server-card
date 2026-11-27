@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.4 - 2026-11-27
+
+### Fixes
+- Tiles have the 10 px corner radius shared by the ha-* cards.
+- Counters: neutral tile background, the colour stays on the icon and the figures (card charter).
+
 ## 1.0.3 - 2026-11-24
 
 ### Maintenance
