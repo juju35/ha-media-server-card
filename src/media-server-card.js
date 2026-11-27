@@ -457,7 +457,7 @@ class MediaServerCard extends RcCard {
     :host([hide-title]) .head .tt { visibility: hidden; }
     .ctr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
     .cn { all: unset; box-sizing: border-box; cursor: pointer; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 12px;
-          --t: var(--ms-play); background: color-mix(in srgb, var(--t) 9%, var(--card-background-color, #fff)); box-shadow: inset 0 0 0 1px transparent; }
+          --t: var(--ms-play); background: var(--secondary-background-color, rgba(127,127,127,.08)); box-shadow: inset 0 0 0 1px transparent; }
     .cn.c-coming { --t: var(--ms-coming); } .cn.c-queue { --t: var(--ms-dl); } .cn.c-requests { --t: var(--ms-req); }
     .cn:hover { background: color-mix(in srgb, var(--t) 15%, var(--card-background-color, #fff)); }
     .cn.on { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--t) 70%, transparent); }
